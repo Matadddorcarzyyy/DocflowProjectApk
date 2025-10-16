@@ -5,12 +5,199 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Владелец — DocFlow</title>
   <style>
-    body { font-family: Inter, system-ui, -apple-system, sans-serif; background:#f8fafc; color:#111827; margin:0; }
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
-    header { display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px; }
-    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
-    table { width:100%; border-collapse: collapse; }
-    th, td { padding:10px; border-bottom:1px solid #e5e7eb; text-align:left; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    :root {
+      --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --panel: rgba(255, 255, 255, 0.95);
+      --panel-2: rgba(255, 255, 255, 0.9);
+      --text: #1a3a5f;
+      --muted: #64748b;
+      --primary: #667eea;
+      --primary-2: #764ba2;
+      --accent: #60a5fa;
+      --danger: #ef4444;
+      --success: #10b981;
+      --border: rgba(102, 126, 234, 0.2);
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+      background: var(--bg);
+      background-attachment: fixed;
+      color: var(--text); 
+      margin: 0;
+      min-height: 100vh;
+    }
+    
+    .wrap { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      padding: 24px; 
+    }
+    
+    header { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      margin-bottom: 32px; 
+      position: sticky; 
+      top: 0; 
+      background: rgba(255, 255, 255, 0.95); 
+      backdrop-filter: blur(20px);
+      z-index: 100; 
+      padding: 20px 0;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    header a { 
+      color: var(--primary); 
+      text-decoration: none; 
+      font-weight: 700;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    header a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+    }
+    
+    header strong { 
+      letter-spacing: .3px; 
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
+    }
+    
+    .card { 
+      background: var(--panel); 
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border); 
+      border-radius: 24px; 
+      padding: 32px; 
+      box-shadow: 0 20px 40px var(--shadow);
+      transition: all 0.3s ease;
+      animation: slideInUp 0.8s ease-out;
+    }
+    
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 32px 64px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card strong { 
+      color: var(--text);
+      font-weight: 800;
+      font-size: 1.3rem;
+      display: block;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 16px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      margin-top: 16px;
+    }
+    
+    th, td { 
+      padding: 16px; 
+      border-bottom: 1px solid var(--border); 
+      text-align: left; 
+    }
+    
+    th {
+      background: rgba(102, 126, 234, 0.1);
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 1rem;
+    }
+    
+    tr:hover {
+      background: rgba(102, 126, 234, 0.05);
+    }
+    
+    @keyframes slideInUp {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Статистические карточки */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card {
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 8px 24px var(--shadow);
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+      margin-bottom: 8px;
+    }
+    
+    .stat-label {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    /* Сводка */
+    #summary {
+      background: rgba(102, 126, 234, 0.1);
+      padding: 20px;
+      border-radius: 16px;
+      margin: 16px 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
   </style>
 </head>
 <body>
