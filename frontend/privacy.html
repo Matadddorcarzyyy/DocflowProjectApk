@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Политика конфиденциальности — DocFlow</title>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, sans-serif; background:#f8fafc; color:#1f2937; margin:0; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+    a { color:#1a3a5f; text-decoration:none; }
+    header { display:flex; align-items:center; justify-content:space-between; padding:16px 0; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="index.html">← На главную</a>
+      <strong>Политика конфиденциальности</strong>
+    </header>
+    <div class="card" id="privacyBox"></div>
+  </div>
+</body>
+<script>
+  (async function(){
+    const box = document.getElementById('privacyBox');
+    box.innerHTML = '<div>Загрузка...</div>';
+    try {
+      const r = await fetch('http://localhost:8080/api/settings/privacy');
+      const d = await r.json();
+      const html = (d && d.html) || '<p>Политика конфиденциальности будет размещена здесь.</p>';
+      box.innerHTML = html;
+    } catch(e) {
+      box.innerHTML = '<p>Не удалось загрузить политику конфиденциальности.</p>';
+    }
+  })();
+</script>
+</html>
+
+

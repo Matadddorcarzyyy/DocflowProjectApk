@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кабинет юриста — DocFlow</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #0f172a;
+      --panel-2: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #22d3ee;
+      --primary-2: #0891b2;
+      --accent: #60a5fa;
+      --danger: #ef4444;
+      --success: #10b981;
+      --border: #24304a;
+      --shadow: rgba(2,6,23,0.7);
+    }
+    body { font-family: Inter, system-ui, -apple-system, sans-serif; background: radial-gradient(1000px 600px at 20% -10%, rgba(96,165,250,0.12), transparent), radial-gradient(900px 600px at 110% 10%, rgba(34,211,238,0.10), transparent), var(--bg); color: var(--text); margin:0; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 24px; }
+    header { display:flex; align-items:center; justify-content:space-between; margin-bottom: 16px; position: sticky; top: 0; background: linear-gradient(180deg, rgba(11,18,32,0.95), rgba(11,18,32,0.85)); backdrop-filter: blur(6px); z-index: 10; padding: 12px 0; }
+    header a { color: var(--accent); text-decoration: none; font-weight: 700; }
+    .status { display:flex; gap:8px; align-items:center; color: var(--muted); }
+    .dot { width:10px; height:10px; border-radius:999px; background:var(--success); box-shadow: 0 0 0 2px rgba(255,255,255,0.06) inset; }
+    .grid { display:grid; grid-template-columns: 1fr; gap: 16px; }
+    .card { background: linear-gradient(180deg, rgba(15,23,42,0.85), rgba(17,24,39,0.85)); border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow: 0 10px 30px var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.03); }
+    .tabs { display:flex; gap:8px; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:8px; }
+    .tab { padding:10px 14px; border-radius:999px; cursor:pointer; color:var(--muted); background: rgba(255,255,255,0.04); border:1px solid var(--border); }
+    .tab:hover { color:#fff; border-color: rgba(255,255,255,0.12); }
+    .tab.active { background: linear-gradient(180deg, var(--primary), var(--primary-2)); color:#fff; border: 0; box-shadow: 0 6px 18px rgba(8,145,178,0.35); }
+    .hidden { display:none !important; }
+    input, textarea, select { background:#0b1220; color:#e5e7eb; border:1px solid var(--border); border-radius:10px; padding:10px; }
+    button { background: linear-gradient(180deg, var(--primary), var(--primary-2)); color:#fff; border:0; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; box-shadow: 0 6px 18px rgba(8,145,178,0.35); }
+    button:hover { filter: brightness(1.05); }
+    #aiEnable { background: linear-gradient(180deg, #34d399, #059669); box-shadow: 0 6px 18px rgba(16,185,129,0.35); }
+    #aiDisable { background: linear-gradient(180deg, #f87171, #dc2626); box-shadow: 0 6px 18px rgba(239,68,68,0.35); }
+    .text-on-white { color: #111827; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header id="topHeader">
+      <a href="index.html">← На главную</a>
+      <div class="status"><span class="dot"></span>В сети</div>
+    </header>
+    <div class="grid">
+      <div class="card" id="tabsBar">
+        <div class="tabs">
+          <div class="tab active" data-tab="home">Главная</div>
+          <div class="tab" data-tab="dialogs">Диалоги</div>
+          <div class="tab" data-tab="chat">Чат</div>
+          <div class="tab" data-tab="drafts">Черновики</div>
+        </div>
+      </div>
+      <div class="card" id="greetingCard">
+        <div style="font-weight:800; font-size:1.1rem; margin-bottom:6px;">Здравствуйте, юрист!</div>
+        <div>Выберите вкладку сверху: просматривайте диалоги, подключайте ИИ и отвечайте клиенту.</div>
+      </div>
+      <div class="card" id="dialogsCard">
+        <strong>Диалоги</strong>
+        <div style="margin:8px 0;">
+          <input id="email" placeholder="email" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:6px;" />
+          <input id="password" type="password" placeholder="пароль" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:6px;" />
+          <button id="login" style="width:100%; padding:8px; border-radius:8px; background:#1a3a5f; color:#fff; font-weight:700;">Войти</button>
+        </div>
+        <ul id="chatList"></ul>
+      </div>
+      <div class="card" id="chatCard">
+        <strong>Чат</strong>
+        <div id="messages" class="text-on-white" style="height:260px; border:1px solid #e5e7eb; border-radius:8px; margin:8px 0; overflow:auto; background:#fff; padding:8px;">—</div>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <button id="aiEnable" style="padding:8px 10px; border-radius:8px; background:#10b981; color:#fff;">Подключить ИИ</button>
+          <button id="aiDisable" style="padding:8px 10px; border-radius:8px; background:#ef4444; color:#fff;">Отключить ИИ</button>
+        </div>
+        <div>
+          <input id="msgInput" style="width:50%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;" placeholder="Введите сообщение" />
+          <button id="sendBtn" style="padding:10px 14px; border-radius:8px; background:#1a3a5f; color:#fff; font-weight:700;">Отправить</button>
+          <button id="leaveChatBtn" style="padding:10px 14px; border-radius:8px; background:#ef4444; color:#fff; font-weight:700; margin-left:8px;">Выйти из чата</button>
+          <span id="typing" style="margin-left:8px; color:#6b7280;"></span>
+        </div>
+      </div>
+      <div class="card" id="draftsCard">
+        <strong>Создать документ (черновик)</strong>
+          <div style="display:grid; grid-template-columns: 1fr 120px; gap:8px; margin-top:6px;">
+            <input id="draftPrompt" placeholder="ТЗ на документ (коротко)" style="padding:8px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <button id="draftBtn" style="padding:8px; border-radius:8px; background:#1a3a5f; color:#fff;">Сгенерировать</button>
+          </div>
+          <textarea id="draftText" style="width:100%; height:120px; margin-top:6px; padding:8px; border:1px solid #cbd5e1; border-radius:8px;" placeholder="Черновик текста"></textarea>
+          <div style="margin-top:6px; display:flex; gap:8px;">
+            <button id="sendDraft" style="padding:8px 10px; border-radius:8px; background:#1a3a5f; color:#fff;">Отправить в чат</button>
+          </div>
+      </div>
+    </div>
+  </div>
+  <script src="http://localhost:8080/socket.io/socket.io.js"></script>
+  <script>
+    (function(){
+      const socket = io('http://localhost:8080', { transports: ['websocket'] });
+      const messages = document.getElementById('messages');
+      const input = document.getElementById('msgInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const typing = document.getElementById('typing');
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      const loginBtn = document.getElementById('login');
+      const chatList = document.getElementById('chatList');
+
+      const tabs = document.querySelectorAll('.tab');
+      const dialogsCard = document.getElementById('dialogsCard');
+      const chatCard = document.getElementById('chatCard');
+      const draftsCard = document.getElementById('draftsCard');
+      const greetingCard = document.getElementById('greetingCard');
+      const topHeader = document.getElementById('topHeader');
+      function showTab(key){
+        [dialogsCard, chatCard, draftsCard].forEach(function(el){ if (el) el.classList.add('hidden'); });
+        if (greetingCard) greetingCard.classList.add('hidden');
+        if (key === 'home') { if (greetingCard) greetingCard.classList.remove('hidden'); }
+        if (key === 'dialogs') { if (dialogsCard) dialogsCard.classList.remove('hidden'); }
+        if (key === 'chat') { if (chatCard) chatCard.classList.remove('hidden'); }
+        if (key === 'drafts') { if (draftsCard) draftsCard.classList.remove('hidden'); }
+        tabs.forEach(function(t){ t.classList.toggle('active', t.getAttribute('data-tab') === key); });
+        // Шапка всегда видима
+        if (topHeader) topHeader.style.display = 'flex';
+      }
+      showTab('home');
+      document.addEventListener('click', function(e){ if (e.target && e.target.classList.contains('tab')) showTab(e.target.getAttribute('data-tab')); });
+
+      let token = localStorage.getItem('jwt') || '';
+      let currentChatId = null;
+      let authed = false;
+      let currentUser = null;
+
+      function append(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      socket.on('connect', function(){
+        if (token) socket.emit('auth', { token: token });
+        if (currentChatId) socket.emit('join-chat', { chatId: currentChatId });
+      });
+
+      socket.on('message', function(evt){
+        if (!currentChatId || evt.chatId !== currentChatId) return;
+        let label = 'ИИ';
+        if (evt.sender === 'lawyer') label = evt.lawyer_name || 'Вы';
+        else if (evt.sender === 'visitor') label = 'Посетитель';
+        else if (evt.sender === 'system') label = 'Система';
+        append(label + ': ' + evt.text);
+      });
+
+      let typingTimer = null;
+      input.addEventListener('input', function(){
+        if (!currentChatId) return;
+        socket.emit('typing', { chatId: currentChatId, isTyping: true, sender: 'lawyer' });
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(function(){
+          if (!currentChatId) return;
+          socket.emit('typing', { chatId: currentChatId, isTyping: false, sender: 'lawyer' });
+        }, 800);
+      });
+
+      socket.on('typing', function(evt){
+        typing.textContent = evt.isTyping ? 'Посетитель печатает…' : '';
+      });
+
+      // New chat assignment notification
+      socket.on('new-chat-assigned', function(evt){
+        if (evt.chatId) {
+          // Auto-refresh chat list to show new chat
+          loadChats();
+          // Show notification
+          const notification = document.createElement('div');
+          notification.style.cssText = 'position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:12px; border-radius:8px; z-index:1000; box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+          notification.textContent = `Новый чат #${evt.chatId} назначен вам!`;
+          document.body.appendChild(notification);
+          setTimeout(() => notification.remove(), 5000);
+        }
+      });
+
+      // Auto-join chat when reassigned
+      socket.on('auto-join-chat', function(evt){
+        if (evt.chatId) {
+          // Automatically select and join the reassigned chat
+          selectChat(evt.chatId);
+        }
+      });
+
+      function send(){
+        if (!authed || !token) {
+          alert('Сначала войдите в систему');
+          return;
+        }
+        var text = (input.value || '').trim();
+        if (!text) return;
+        if (!currentChatId) return;
+        socket.emit('message', { chatId: currentChatId, sender: 'lawyer', text: text });
+        input.value = '';
+      }
+
+      sendBtn.addEventListener('click', send);
+      input.addEventListener('keydown', function(e){ if (e.key === 'Enter') send(); });
+
+      // ---- Auth and data ----
+      function updateUiAuth(){
+        const display = authed ? 'block' : 'none';
+        chatList.style.display = display;
+        // Показываем/скрываем поля входа в зависимости от авторизации
+        if (email) email.style.display = authed ? 'none' : 'block';
+        if (password) password.style.display = authed ? 'none' : 'block';
+        if (loginBtn) loginBtn.style.display = authed ? 'none' : 'block';
+        // Показываем кнопку выхода если авторизован
+        if (authed) {
+          if (!document.getElementById('logoutBtn')) {
+            const logoutBtn = document.createElement('button');
+            logoutBtn.id = 'logoutBtn';
+            logoutBtn.textContent = 'Выйти';
+            logoutBtn.style.cssText = 'width:100%; padding:8px; border-radius:8px; background:#ef4444; color:#fff; font-weight:700; margin-top:6px;';
+            logoutBtn.addEventListener('click', function(){
+              token = '';
+              currentUser = null;
+              authed = false;
+              localStorage.removeItem('jwt');
+              updateUiAuth();
+              messages.innerHTML = '—';
+              currentChatId = null;
+              showTab('home');
+            });
+            const dialogsCard = document.getElementById('dialogsCard');
+            if (dialogsCard) {
+              dialogsCard.appendChild(logoutBtn);
+            }
+          }
+        } else {
+          const logoutBtn = document.getElementById('logoutBtn');
+          if (logoutBtn) logoutBtn.remove();
+        }
+      }
+      updateUiAuth();
+
+      // if token exists, validate and preload
+      (async function initAuth(){
+        if (!token) return;
+        try {
+          const r = await fetch('http://localhost:8080/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
+          if (!r.ok) throw new Error();
+          const me = await r.json();
+          if (me && (me.role === 'lawyer' || me.role === 'admin' || me.role === 'owner')) {
+            currentUser = me;
+            authed = true; updateUiAuth();
+            socket.emit('auth', { token: token });
+            await loadChats();
+          }
+        } catch(e) {
+          authed = false; updateUiAuth();
+          localStorage.removeItem('jwt'); token = '';
+        }
+      })();
+      loginBtn.addEventListener('click', async function(){
+        const emailValue = email.value.trim();
+        const passwordValue = password.value.trim();
+        
+        if (!emailValue || !passwordValue) {
+          alert('Введите email и пароль');
+          return;
+        }
+        
+        try {
+          const r = await fetch('http://localhost:8080/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailValue, password: passwordValue })
+          });
+          const data = await r.json();
+          if (!r.ok) { 
+            alert(data.error === 'invalid_credentials' ? 'Неверный email или пароль' : 'Ошибка входа'); 
+            return; 
+          }
+          token = data.token; 
+          localStorage.setItem('jwt', token);
+          currentUser = data.user;
+          authed = true; 
+          updateUiAuth();
+          socket.emit('auth', { token: token });
+          try { 
+            await loadChats(); 
+            showTab('dialogs'); // Переключаемся на вкладку диалогов после входа
+          } catch(e) {
+            console.error('Error loading chats after login:', e);
+          }
+        } catch(e) { 
+          console.error('Login error:', e);
+          alert('Ошибка подключения к серверу');
+        }
+      });
+
+      async function loadChats(){
+        if (!token || !authed) return;
+        chatList.innerHTML = '';
+        try {
+          const r = await fetch('http://localhost:8080/api/chats/available', { headers: { Authorization: 'Bearer ' + token } });
+          if (!r.ok) { 
+            if (r.status === 401) {
+              // Token expired, logout
+              token = '';
+              currentUser = null;
+              authed = false;
+              localStorage.removeItem('jwt');
+              updateUiAuth();
+              alert('Сессия истекла. Войдите заново.');
+              return;
+            }
+            alert('Не удалось загрузить чаты'); 
+            return; 
+          }
+          const list = await r.json();
+          if (list.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = 'Нет доступных чатов';
+            li.style.color = '#9ca3af';
+            li.style.fontStyle = 'italic';
+            chatList.appendChild(li);
+          } else {
+            list.forEach(function(c){
+              const li = document.createElement('li');
+              const status = c.assignedToMe ? ' (ваш)' : ' (доступен)';
+              li.textContent = '#' + c.id + ' посетитель: ' + (c.visitor_id || '—') + status;
+              li.style.cursor = 'pointer';
+              li.style.padding = '8px';
+              li.style.margin = '4px 0';
+              li.style.borderRadius = '6px';
+              li.style.backgroundColor = c.assignedToMe ? '#d1fae5' : '#f3f4f6';
+              li.style.border = c.assignedToMe ? '1px solid #10b981' : '1px solid #e5e7eb';
+              li.addEventListener('click', function(){ selectChat(c.id); });
+              chatList.appendChild(li);
+            });
+          }
+        } catch(e) {
+          console.error('Error loading chats:', e);
+          alert('Ошибка загрузки чатов');
+        }
+      }
+
+      async function selectChat(id){
+        if (!authed || !token) {
+          alert('Сначала войдите в систему');
+          return;
+        }
+        
+        // First, try to assign this chat to the lawyer
+        try {
+          const assignResponse = await fetch(`http://localhost:8080/api/chats/${id}/assign`, {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + token }
+          });
+          if (assignResponse.ok) {
+            // Refresh chat list to show updated status
+            loadChats();
+          }
+        } catch(e) {
+          console.error('Error assigning chat:', e);
+        }
+        
+        currentChatId = id;
+        messages.innerHTML = '';
+        socket.emit('join-chat', { chatId: currentChatId });
+        try {
+          const r = await fetch('http://localhost:8080/api/chats/' + id + '/messages', { headers: { Authorization: 'Bearer ' + token } });
+          if (!r.ok) {
+            if (r.status === 401) {
+              alert('Сессия истекла. Войдите заново.');
+              return;
+            }
+            alert('Ошибка загрузки сообщений');
+            return;
+          }
+          const msgs = await r.json();
+          msgs.forEach(function(m){
+            let label = 'ИИ';
+            if (m.sender === 'lawyer') label = currentUser && currentUser.full_name ? currentUser.full_name : 'Вы';
+            else if (m.sender === 'visitor') label = 'Посетитель';
+            else if (m.sender === 'system') label = 'Система';
+            append(label + ': ' + m.text);
+          });
+          // Показать вкладку Чат автоматически
+          if (typeof showTab === 'function') { showTab('chat'); }
+        } catch(e) {
+          console.error('Error loading messages:', e);
+          alert('Ошибка загрузки сообщений');
+        }
+      }
+
+      // Leave chat functionality
+      const leaveChatBtn = document.getElementById('leaveChatBtn');
+      leaveChatBtn.addEventListener('click', function(){
+        if (!currentChatId) return;
+        socket.emit('leave-chat', { chatId: currentChatId });
+        currentChatId = null;
+        messages.innerHTML = '—';
+        showTab('dialogs');
+      });
+
+      // initial load handled by initAuth(); no auto-load before login
+
+      // --- Draft generation ---
+      const draftBtn = document.getElementById('draftBtn');
+      const draftPrompt = document.getElementById('draftPrompt');
+      const draftText = document.getElementById('draftText');
+      const sendDraft = document.getElementById('sendDraft');
+      const aiEnableBtn = document.getElementById('aiEnable');
+      const aiDisableBtn = document.getElementById('aiDisable');
+
+      draftBtn.addEventListener('click', async function(){
+        try {
+          const r = await fetch('http://localhost:8080/api/ai/draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: draftPrompt.value }) });
+          const d = await r.json();
+          if (d && d.draft) draftText.value = d.draft;
+        } catch(e) { console.error(e); }
+      });
+      sendDraft.addEventListener('click', function(){
+        if (!currentChatId || !draftText.value.trim()) return;
+        socket.emit('message', { chatId: currentChatId, sender: 'lawyer', text: draftText.value.trim() });
+        draftText.value = '';
+      });
+
+      // AI controls
+      aiEnableBtn.addEventListener('click', async function(){
+        if (!authed || !token) {
+          alert('Сначала войдите в систему');
+          return;
+        }
+        if (!currentChatId) return;
+        try {
+          await fetch('http://localhost:8080/api/chats/' + currentChatId + '/ai/enable', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+        } catch(e) {
+          console.error('Error enabling AI:', e);
+          alert('Ошибка подключения ИИ');
+        }
+      });
+      aiDisableBtn.addEventListener('click', async function(){
+        if (!authed || !token) {
+          alert('Сначала войдите в систему');
+          return;
+        }
+        if (!currentChatId) return;
+        try {
+          await fetch('http://localhost:8080/api/chats/' + currentChatId + '/ai/disable', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+        } catch(e) {
+          console.error('Error disabling AI:', e);
+          alert('Ошибка отключения ИИ');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+
+

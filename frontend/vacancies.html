@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Вакансии — DocFlow</title>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, sans-serif; background:#f8fafc; color:#1f2937; margin:0; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+    a { color:#1a3a5f; text-decoration:none; }
+    header { display:flex; align-items:center; justify-content:space-between; padding:16px 0; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); }
+    .muted { color:#6b7280; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="index.html">← На главную</a>
+      <strong>Вакансии</strong>
+    </header>
+    <div class="card" id="vacancies"></div>
+  </div>
+</body>
+<script>
+  (async function(){
+    const box = document.getElementById('vacancies');
+    box.innerHTML = '<div class="muted">Загрузка...</div>';
+    try {
+      const r = await fetch('http://localhost:8080/api/vacancies');
+      const list = await r.json();
+      if (!Array.isArray(list) || list.length === 0) { box.innerHTML = '<div class="muted">Пока нет открытых вакансий.</div>'; return; }
+      const container = document.createElement('div');
+      container.style.display = 'grid';
+      container.style.gap = '16px';
+      list.forEach(function(v){
+        const card = document.createElement('div');
+        card.style.border = '1px solid #e5e7eb';
+        card.style.borderRadius = '12px';
+        card.style.padding = '12px';
+        const title = document.createElement('div');
+        title.style.fontWeight = '700';
+        title.style.marginBottom = '6px';
+        title.textContent = v.title || 'Вакансия';
+        const meta = document.createElement('div');
+        meta.className = 'muted';
+        const parts = [];
+        if (v.location) parts.push(v.location);
+        if (v.employment_type) parts.push(v.employment_type);
+        if (v.salary_min || v.salary_max) {
+          const s = [v.salary_min ? (v.salary_min + ' ₽') : '', v.salary_max ? ('– ' + v.salary_max + ' ₽') : ''].join('');
+          if (s.trim()) parts.push(s);
+        }
+        meta.textContent = parts.join(' • ');
+        const desc = document.createElement('div');
+        desc.style.marginTop = '8px';
+        desc.textContent = (v.description || '').slice(0, 400) + ((v.description && v.description.length > 400) ? '…' : '');
+        card.appendChild(title);
+        card.appendChild(meta);
+        card.appendChild(desc);
+        container.appendChild(card);
+      });
+      box.innerHTML = '';
+      box.appendChild(container);
+    } catch(e) {
+      box.innerHTML = '<div class="muted">Ошибка загрузки вакансий</div>';
+    }
+  })();
+</script>
+</html>
+
+

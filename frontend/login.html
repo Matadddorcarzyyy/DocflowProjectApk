@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Вход — DocFlow</title>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, sans-serif; background:#f8fafc; color:#111827; margin:0; }
+    .wrap { max-width: 420px; margin: 60px auto; padding: 24px; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
+    input { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:10px; }
+    button { width:100%; padding:10px; border-radius:8px; background:#1a3a5f; color:#fff; font-weight:700; }
+    a { color:#1a3a5f; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2>Вход</h2>
+      <input id="email" placeholder="email" />
+      <input id="password" type="password" placeholder="пароль" />
+      <button id="login">Войти</button>
+      <div style="margin-top:8px; font-size:14px;">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      const loginBtn = document.getElementById('login');
+
+      loginBtn.addEventListener('click', async function(){
+        try {
+          const r = await fetch('http://localhost:8080/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email.value, password: password.value })
+          });
+          const data = await r.json();
+          if (!r.ok) { alert('Ошибка входа'); return; }
+          localStorage.setItem('jwt', data.token);
+          // Узнаём роль
+          const meR = await fetch('http://localhost:8080/api/auth/me', { headers: { Authorization: 'Bearer ' + data.token } });
+          const me = await meR.json();
+          if (me.role === 'lawyer') location.href = 'lawyer.html';
+          else if (me.role === 'admin' || me.role === 'owner') location.href = 'admin.html';
+          else location.href = 'index.html';
+        } catch(e) { console.error(e); }
+      });
+    })();
+  </script>
+</body>
+</html>

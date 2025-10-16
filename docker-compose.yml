@@ -1,0 +1,64 @@
+version: '3.9'
+
+services:
+  api:
+    build: ./server
+    container_name: docflow_api
+    environment:
+      - PORT=8080
+      - DATABASE_URL=postgres://docflow:docflow_password@db:5432/docflow
+      - NODE_ENV=development
+      - ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - docflow_net
+
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: docflow_db
+    environment:
+      POSTGRES_USER: docflow
+      POSTGRES_PASSWORD: docflow_password
+      POSTGRES_DB: docflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - docflow_net
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: docflow_n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+    networks:
+      - docflow_net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: docflow_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - docflow_net
+
+volumes:
+  db_data:
+  ollama_data:
+
+networks:
+  docflow_net:
+    driver: bridge
+
+

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Владелец — DocFlow</title>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, sans-serif; background:#f8fafc; color:#111827; margin:0; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    header { display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px; border-bottom:1px solid #e5e7eb; text-align:left; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="index.html">← На главную</a>
+      <strong>Панель владельца</strong>
+    </header>
+    <div class="card">
+      <strong>Сводка</strong>
+      <div id="summary" style="margin-top:8px;">Загрузка…</div>
+      <table id="users"><thead><tr><th>Роль</th><th>Кол-во</th></tr></thead><tbody></tbody></table>
+      <div style="margin-top:8px;">Заказы по статусам:</div>
+      <table id="orders"><thead><tr><th>Статус</th><th>Кол-во</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+  <script>
+    (function(){
+      const token = localStorage.getItem('jwt') || localStorage.getItem('jwt_admin') || '';
+      if (!token) { location.href = 'login.html'; return; }
+      fetch('http://localhost:8080/api/auth/me', { headers: { Authorization: 'Bearer ' + token } })
+        .then(function(r){ if (!r.ok) throw new Error(); return r.json(); })
+        .then(function(me){ if (me.role !== 'owner' && me.role !== 'admin') { location.href = 'login.html'; return; } load(); })
+        .catch(function(){ location.href = 'login.html'; });
+
+      async function load(){
+        const r = await fetch('http://localhost:8080/api/stats', { headers: { Authorization: 'Bearer ' + token } });
+        const s = await r.json();
+        document.getElementById('summary').textContent = 'Чаты: ' + s.chats + ' | Сообщения: ' + s.messages;
+        const ut = document.querySelector('#users tbody'); ut.innerHTML = '';
+        s.users.forEach(function(u){
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + u.role + '</td><td>' + u.c + '</td>';
+          ut.appendChild(tr);
+        });
+        const ot = document.querySelector('#orders tbody'); ot.innerHTML = '';
+        s.orders.forEach(function(o){
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + o.status + '</td><td>' + o.c + '</td>';
+          ot.appendChild(tr);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
+
+

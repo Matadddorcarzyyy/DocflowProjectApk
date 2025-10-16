@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Администратор — DocFlow</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #0f172a;
+      --panel-2: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #60a5fa;
+      --primary-2: #2563eb;
+      --accent: #22d3ee;
+      --danger: #ef4444;
+      --success: #10b981;
+      --border: #24304a;
+      --shadow: rgba(2,6,23,0.7);
+    }
+    body { font-family: Inter, system-ui, -apple-system, sans-serif; background: radial-gradient(1000px 600px at 20% -10%, rgba(34,211,238,0.12), transparent), radial-gradient(900px 600px at 110% 10%, rgba(96,165,250,0.10), transparent), var(--bg); color: var(--text); margin:0; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 24px; }
+    header { display:flex; align-items:center; justify-content:space-between; margin-bottom: 16px; position: sticky; top: 0; background: linear-gradient(180deg, rgba(11,18,32,0.95), rgba(11,18,32,0.85)); backdrop-filter: blur(6px); z-index: 10; padding: 12px 0; }
+    header a { color: var(--accent); text-decoration: none; font-weight: 700; }
+    header strong { letter-spacing: .3px; }
+    .grid { display:grid; grid-template-columns: 1fr; gap: 16px; }
+    .card { background: linear-gradient(180deg, rgba(15,23,42,0.85), rgba(17,24,39,0.85)); border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow: 0 10px 30px var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.03); }
+    .card strong { color:#fff; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px; border-bottom:1px solid var(--border); text-align:left; color: var(--text); }
+    .dot { width:10px; height:10px; border-radius:999px; display:inline-block; box-shadow: 0 0 0 2px rgba(255,255,255,0.06) inset; }
+    .dot.green { background:var(--success); }
+    .dot.red { background:var(--danger); }
+    .tabs { display:flex; gap:8px; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:8px; }
+    .tab { padding:10px 14px; border-radius:999px; cursor:pointer; color:var(--muted); background: rgba(255,255,255,0.04); border:1px solid var(--border); }
+    .tab:hover { color:#fff; border-color: rgba(255,255,255,0.12); }
+    .tab.active { background: linear-gradient(180deg, var(--primary), var(--primary-2)); color:#fff; border: 0; box-shadow: 0 6px 18px rgba(37,99,235,0.35); }
+    .hidden { display:none !important; }
+    input, textarea, select { background:#0b1220; color:#e5e7eb; border:1px solid var(--border); border-radius:10px; padding:10px; }
+    button { background: linear-gradient(180deg, var(--primary), var(--primary-2)); color:#fff; border:0; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; box-shadow: 0 6px 18px rgba(37,99,235,0.35); }
+    button:hover { filter: brightness(1.05); }
+    #aiEnable { background: linear-gradient(180deg, #34d399, #059669); box-shadow: 0 6px 18px rgba(16,185,129,0.35); }
+    #aiDisable { background: linear-gradient(180deg, #f87171, #dc2626); box-shadow: 0 6px 18px rgba(239,68,68,0.35); }
+    .text-on-white { color: #111827; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header id="topHeader">
+      <a href="index.html">← На главную</a>
+      <strong>Панель администратора</strong>
+    </header>
+    <div class="grid">
+      <div class="card" id="tabsBar">
+        <div class="tabs">
+          <div class="tab active" data-tab="home">Главная</div>
+          <div class="tab" data-tab="chats">Чаты</div>
+          <div class="tab" data-tab="users">Юристы</div>
+          <div class="tab" data-tab="content">Контент</div>
+          <div class="tab" data-tab="settings">Настройки</div>
+        </div>
+      </div>
+      <div class="card" id="greetingCard">
+        <div style="font-weight:800; font-size:1.1rem; margin-bottom:6px;">Здравствуйте, администратор!</div>
+        <div>Выберите вкладку сверху, чтобы перейти к нужному разделу.</div>
+      </div>
+      <div class="card">
+        <strong>Юристы</strong>
+        <div style="display:flex; gap:8px; align-items:center; margin:8px 0;">
+          <label>Роль:
+            <select id="roleFilter" style="padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+              <option value="">Все</option>
+              <option value="lawyer">lawyer</option>
+              <option value="admin">admin</option>
+              <option value="owner">owner</option>
+              <option value="partner">partner</option>
+            </select>
+          </label>
+          <input id="userSearch" placeholder="Поиск (имя или email)" style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:8px;" />
+        </div>
+        <table id="lawyers">
+          <thead><tr><th>Статус</th><th>Имя</th><th>Email</th><th>Роль</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card" id="vacanciesCard">
+        <strong>Вакансии (управление)</strong>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin:8px 0;">
+          <div style="display:grid; gap:8px;">
+            <input id="vacTitle" placeholder="Название" style="padding:8px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <input id="vacLocation" placeholder="Локация" style="padding:8px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <input id="vacType" placeholder="Тип занятости (полная/частичная/удалённая)" style="padding:8px; border:1px solid #cbd5e1; border-radius:8px;" />
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <input id="vacSalaryMin" type="number" placeholder="Зарплата от" style="padding:8px; border:1px solid #cbd5e1; border-radius:8px;" />
+              <input id="vacSalaryMax" type="number" placeholder="до" style="padding:8px; border:1px solid #cbd5e1; border-radius:8px;" />
+            </div>
+            <label style="display:flex; gap:8px; align-items:center;">
+              <input id="vacActive" type="checkbox" checked />
+              Активна
+            </label>
+            <textarea id="vacDesc" placeholder="Описание" rows="5" style="padding:8px; border:1px solid #cbd5e1; border-radius:8px;"></textarea>
+            <div>
+              <button id="vacCreate" style="padding:8px 12px; border-radius:8px; background:#1a3a5f; color:#fff; font-weight:700;">Сохранить вакансию</button>
+              <button id="vacReset" style="padding:8px 12px; border-radius:8px; margin-left:8px;">Сброс</button>
+            </div>
+            <input type="hidden" id="vacEditingId" />
+          </div>
+          <div>
+            <ul id="vacList" style="max-height:300px; overflow:auto; margin-top:4px;"></ul>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="privacyCard">
+        <strong>Политика конфиденциальности (редактор)</strong>
+        <div style="margin:8px 0; display:grid; gap:8px;">
+          <div class="muted">Редактируйте HTML: он будет отображаться на странице privacy.html</div>
+          <textarea id="privacyHtml" rows="10" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px;"></textarea>
+          <div>
+            <button id="privacySave" style="padding:8px 12px; border-radius:8px; background:#1a3a5f; color:#fff; font-weight:700;">Сохранить</button>
+            <a href="privacy.html" target="_blank" style="margin-left:8px;">Открыть privacy.html</a>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="conversationsCard">
+        <strong>Переписки</strong>
+        <div style="margin:8px 0;">
+          <input id="email" placeholder="email" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:6px;" />
+          <input id="password" type="password" placeholder="пароль" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:6px;" />
+          <button id="login" style="width:100%; padding:8px; border-radius:8px; background:#1a3a5f; color:#fff; font-weight:700;">Войти</button>
+        </div>
+        <div style="display:grid; grid-template-columns: 260px 1fr 220px; gap:12px;">
+          <div>
+            <div><strong>Чаты</strong></div>
+            <ul id="chatList" class="text-on-white" style="height:260px; overflow:auto; border:1px solid #e5e7eb; border-radius:8px; padding:8px; background:#fff;"></ul>
+          </div>
+          <div>
+            <div><strong>Сообщения</strong></div>
+            <div id="messages" class="text-on-white" style="height:260px; border:1px solid #e5e7eb; border-radius:8px; margin-top:4px; overflow:auto; background:#fff; padding:8px;">—</div>
+            <div style="margin-top:6px; display:flex; gap:8px;">
+              <button id="aiEnable" style="padding:6px 10px; border-radius:8px; background:#10b981; color:#fff;">Включить ИИ</button>
+              <button id="aiDisable" style="padding:6px 10px; border-radius:8px; background:#ef4444; color:#fff;">Выключить ИИ</button>
+            </div>
+          </div>
+          <div>
+            <div><strong>Файлы</strong></div>
+            <div id="files" class="text-on-white" style="height:260px; border:1px solid #e5e7eb; border-radius:8px; margin-top:4px; overflow:auto; background:#fff; padding:8px;">—</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;"><strong>События (Socket)</strong></div>
+        <div id="feed" class="text-on-white" style="height:160px; border:1px solid #e5e7eb; border-radius:8px; margin:8px 0; overflow:auto; background:#fff; padding:8px;">—</div>
+      </div>
+      <div class="card" id="documentsCard">
+        <strong>Документы (управление)</strong>
+        <div style="display:grid; grid-template-columns: 1fr 120px 120px; gap:8px; margin:8px 0;">
+          <input id="docTitle" placeholder="Название документа" style="padding:8px; border:1px solid #cbd5e1; border-radius:8px;" />
+          <input id="docPrice" type="number" placeholder="Цена" style="padding:8px; border:1px solid #cbd5e1; border-radius:8px;" />
+          <button id="docCreate" style="padding:8px; border-radius:8px; background:#1a3a5f; color:#fff; font-weight:700;">Добавить</button>
+        </div>
+        <ul id="docList" style="max-height:220px; overflow:auto; margin-top:4px;"></ul>
+      </div>
+    </div>
+  </div>
+  <script src="http://localhost:8080/socket.io/socket.io.js"></script>
+  <script>
+    (function(){
+      const socket = io('http://localhost:8080', { transports: ['websocket'] });
+      const feed = document.getElementById('feed');
+      const tabs = document.querySelectorAll('.tab');
+      const usersCard = document.querySelector('#lawyers')?.closest('.card');
+      const vacanciesCard = document.getElementById('vacanciesCard');
+      const privacyCard = document.getElementById('privacyCard');
+      const conversationsCard = document.getElementById('conversationsCard');
+      const documentsCard = document.getElementById('documentsCard');
+      const greetingCard = document.getElementById('greetingCard');
+      const topHeader = document.getElementById('topHeader');
+      function showTab(key){
+        // hide all
+        [usersCard, vacanciesCard, privacyCard, conversationsCard, documentsCard].forEach(function(el){ if (el) el.classList.add('hidden'); });
+        if (greetingCard) greetingCard.classList.add('hidden');
+        // show by key
+        if (key === 'home') { if (greetingCard) greetingCard.classList.remove('hidden'); }
+        if (key === 'chats') { if (conversationsCard) conversationsCard.classList.remove('hidden'); }
+        if (key === 'users') { if (usersCard) usersCard.classList.remove('hidden'); }
+        if (key === 'content') { if (documentsCard) documentsCard.classList.remove('hidden'); if (vacanciesCard) vacanciesCard.classList.remove('hidden'); }
+        if (key === 'settings') { if (privacyCard) privacyCard.classList.remove('hidden'); }
+        tabs.forEach(function(t){ t.classList.toggle('active', t.getAttribute('data-tab') === key); });
+        // Шапка всегда видима
+        if (topHeader) topHeader.style.display = 'flex';
+      }
+      // default state: show home only
+      showTab('home');
+      document.addEventListener('click', function(e){ if (e.target && e.target.classList.contains('tab')) showTab(e.target.getAttribute('data-tab')); });
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      const loginBtn = document.getElementById('login');
+      const chatList = document.getElementById('chatList');
+      const messages = document.getElementById('messages');
+      const files = document.getElementById('files');
+      let token = localStorage.getItem('jwt_admin') || '';
+      let currentChatId = null;
+      if (!token) {
+        // не редиректим автоматически, чтобы можно было войти прямо здесь
+      } else {
+        // проверка токена
+        fetch('http://localhost:8080/api/auth/me', { headers: { Authorization: 'Bearer ' + token } })
+          .then(function(r){ if (!r.ok) throw new Error(); return r.json(); })
+          .then(function(me){ if (me.role !== 'admin' && me.role !== 'owner') { localStorage.removeItem('jwt_admin'); } })
+          .catch(function(){ localStorage.removeItem('jwt_admin'); });
+      }
+
+      // --- Documents CRUD ---
+      const docTitle = document.getElementById('docTitle');
+      const docPrice = document.getElementById('docPrice');
+      const docCreate = document.getElementById('docCreate');
+      const docList = document.getElementById('docList');
+
+      async function loadDocs(){
+        docList.innerHTML = '';
+        const r = await fetch('http://localhost:8080/api/documents');
+        const docs = await r.json();
+        docs.forEach(function(d){
+          const li = document.createElement('li');
+          const title = fixMojibake(d.title);
+          li.textContent = title + ' — ' + d.base_price + ' ₽';
+          const del = document.createElement('button');
+          del.textContent = 'Удалить';
+          del.style.marginLeft = '8px';
+          del.addEventListener('click', async function(){
+            await fetch('http://localhost:8080/api/documents/' + d.id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+            await loadDocs();
+          });
+          li.appendChild(del);
+          docList.appendChild(li);
+        });
+      }
+
+      docCreate.addEventListener('click', async function(){
+        if (!docTitle.value || !docPrice.value) return;
+        await fetch('http://localhost:8080/api/documents', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ title: docTitle.value, base_price: Number(docPrice.value) })
+        });
+        docTitle.value = ''; docPrice.value = '';
+        await loadDocs();
+      });
+
+      loadDocs().catch(function(){});
+      // Live updates when other admins change docs
+      socket.on('documents-updated', function(){ loadDocs().catch(function(){}); });
+
+      // --- Vacancies CRUD ---
+      const vacTitle = document.getElementById('vacTitle');
+      const vacLocation = document.getElementById('vacLocation');
+      const vacType = document.getElementById('vacType');
+      const vacSalaryMin = document.getElementById('vacSalaryMin');
+      const vacSalaryMax = document.getElementById('vacSalaryMax');
+      const vacActive = document.getElementById('vacActive');
+      const vacDesc = document.getElementById('vacDesc');
+      const vacCreate = document.getElementById('vacCreate');
+      const vacReset = document.getElementById('vacReset');
+      const vacEditingId = document.getElementById('vacEditingId');
+      const vacList = document.getElementById('vacList');
+
+      function clearVacForm(){
+        vacEditingId.value = '';
+        vacTitle.value = '';
+        vacLocation.value = '';
+        vacType.value = '';
+        vacSalaryMin.value = '';
+        vacSalaryMax.value = '';
+        vacActive.checked = true;
+        vacDesc.value = '';
+        vacCreate.textContent = 'Сохранить вакансию';
+      }
+
+      async function loadVacancies(){
+        vacList.innerHTML = '';
+        const r = await fetch('http://localhost:8080/api/vacancies/admin', { headers: { Authorization: 'Bearer ' + token } });
+        const list = await r.json();
+        list.forEach(function(v){
+          const li = document.createElement('li');
+          const title = v.title + (v.is_active ? '' : ' (скрыта)');
+          li.style.display = 'flex';
+          li.style.alignItems = 'center';
+          li.style.gap = '8px';
+          li.style.padding = '4px 0';
+          const name = document.createElement('span');
+          name.textContent = title;
+          const editBtn = document.createElement('button');
+          editBtn.textContent = 'Изм.';
+          editBtn.addEventListener('click', function(){
+            vacEditingId.value = v.id;
+            vacTitle.value = v.title || '';
+            vacLocation.value = v.location || '';
+            vacType.value = v.employment_type || '';
+            vacSalaryMin.value = v.salary_min || '';
+            vacSalaryMax.value = v.salary_max || '';
+            vacActive.checked = !!v.is_active;
+            vacDesc.value = v.description || '';
+            vacCreate.textContent = 'Обновить вакансию';
+          });
+          const toggleBtn = document.createElement('button');
+          toggleBtn.textContent = v.is_active ? 'Скрыть' : 'Опубликовать';
+          toggleBtn.addEventListener('click', async function(){
+            await fetch('http://localhost:8080/api/vacancies/' + v.id, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+              body: JSON.stringify({ is_active: !v.is_active })
+            });
+            await loadVacancies();
+          });
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Удалить';
+          delBtn.addEventListener('click', async function(){
+            if (!confirm('Удалить вакансию?')) return;
+            await fetch('http://localhost:8080/api/vacancies/' + v.id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+            await loadVacancies();
+          });
+          li.appendChild(name);
+          li.appendChild(editBtn);
+          li.appendChild(toggleBtn);
+          li.appendChild(delBtn);
+          vacList.appendChild(li);
+        });
+      }
+
+      vacCreate.addEventListener('click', async function(){
+        if (!vacTitle.value) return;
+        const payload = {
+          title: vacTitle.value,
+          description: vacDesc.value,
+          location: vacLocation.value,
+          employment_type: vacType.value,
+          salary_min: vacSalaryMin.value ? Number(vacSalaryMin.value) : null,
+          salary_max: vacSalaryMax.value ? Number(vacSalaryMax.value) : null,
+          is_active: !!vacActive.checked
+        };
+        const id = vacEditingId.value;
+        if (id) {
+          await fetch('http://localhost:8080/api/vacancies/' + id, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          await fetch('http://localhost:8080/api/vacancies', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify(payload)
+          });
+        }
+        clearVacForm();
+        await loadVacancies();
+      });
+      vacReset.addEventListener('click', clearVacForm);
+
+      // Хелпер: попытка починить кракозябры UTF-8 (Ð/Ñ/�)
+      function fixMojibake(str){
+        try {
+          if (/[ÐÑ�]/.test(String(str||''))) {
+            // обратимое преобразование: latin1 bytes -> decode as UTF-8
+            return decodeURIComponent(escape(String(str)));
+          }
+        } catch(e) {}
+        return str;
+      }
+
+      // Фильтрация
+      document.addEventListener('change', function(e){ if (e.target && e.target.id === 'roleFilter') { loadLawyers().catch(function(){}); } });
+      let userSearchTimer = null;
+      document.addEventListener('input', function(e){ if (e.target && e.target.id === 'userSearch') { clearTimeout(userSearchTimer); userSearchTimer = setTimeout(function(){ loadLawyers().catch(function(){}); }, 250); } });
+
+      async function loadLawyers(){
+        const tbody = document.querySelector('#lawyers tbody');
+        tbody.innerHTML = '';
+        const roleSel = document.getElementById('roleFilter');
+        const searchEl = document.getElementById('userSearch');
+        const role = roleSel ? roleSel.value : '';
+        const qs = role ? ('?role=' + encodeURIComponent(role)) : '';
+        const r = await fetch('http://localhost:8080/api/users' + qs, { headers: { Authorization: 'Bearer ' + token } });
+        let users = await r.json();
+        const q = searchEl ? (searchEl.value || '').toLowerCase() : '';
+        if (q) {
+          users = users.filter(function(u){ return String(u.full_name||'').toLowerCase().includes(q) || String(u.email||'').toLowerCase().includes(q); });
+        }
+        users.forEach(function(u){
+          const tr = document.createElement('tr');
+          const dot = '<span class="dot ' + (u.online ? 'green' : 'red') + '"></span>';
+          tr.innerHTML = '<td>' + dot + '</td><td>' + (u.full_name || '—') + '</td><td>' + u.email + '</td><td>' + u.role + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+      function log(text){
+        const div = document.createElement('div');
+        div.textContent = text;
+        feed.appendChild(div);
+        feed.scrollTop = feed.scrollHeight;
+      }
+
+      socket.on('connect', function(){
+        if (token) socket.emit('auth', { token: token });
+        // Админ слушает все комнаты через бэкенд-ивенты (демо: подключаемся к чату 1234)
+        socket.emit('join-chat', { chatId: 1234 });
+        log('Подключено к серверу');
+      });
+
+      socket.on('presence-user', function(evt){
+        // при изменении онлайна юристов перезагружаем список
+        loadLawyers().catch(function(){});
+      });
+
+      socket.on('presence', function(evt){
+        log('Присутствие: чат ' + evt.chatId + ' online=' + evt.online);
+      });
+      socket.on('typing', function(evt){
+        log('Печатает: чат ' + evt.chatId + ' ' + (evt.sender||'кто-то'));
+      });
+      socket.on('message', function(evt){
+        let label = evt.sender || 'кто-то';
+        if (evt.sender === 'system') label = 'Система';
+        log('Сообщение [' + evt.chatId + ']: ' + label + ': ' + evt.text);
+      });
+
+      loginBtn.addEventListener('click', async function(){
+        try {
+          const r = await fetch('http://localhost:8080/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email.value, password: password.value })
+          });
+          const data = await r.json();
+          if (!r.ok) { alert('Ошибка входа'); return; }
+          token = data.token; localStorage.setItem('jwt_admin', token);
+          log('Вход выполнен');
+          await Promise.all([loadChats(), loadDocs(), loadLawyers(), loadVacancies(), loadPrivacy()]);
+        } catch(e) { console.error(e); }
+      });
+
+      async function loadChats(){
+        chatList.innerHTML = '';
+        const r = await fetch('http://localhost:8080/api/chats', { headers: { Authorization: 'Bearer ' + token } });
+        const list = await r.json();
+        list.forEach(function(c){
+          const li = document.createElement('li');
+          li.textContent = '#' + c.id + ' посетитель: ' + (c.visitor_id || '—');
+          li.style.cursor = 'pointer';
+          li.style.padding = '4px 0';
+          li.addEventListener('click', function(){ selectChat(c.id); });
+          chatList.appendChild(li);
+        });
+      }
+
+      async function selectChat(id){
+        currentChatId = id;
+        messages.innerHTML = '';
+        files.innerHTML = '';
+        socket.emit('join-chat', { chatId: currentChatId });
+        const [r1, r2] = await Promise.all([
+          fetch('http://localhost:8080/api/chats/' + id + '/messages', { headers: { Authorization: 'Bearer ' + token } }),
+          fetch('http://localhost:8080/api/chats/' + id + '/files', { headers: { Authorization: 'Bearer ' + token } })
+        ]);
+        const msgs = await r1.json();
+        const fls = await r2.json();
+        msgs.forEach(function(m){
+          const div = document.createElement('div');
+          const label = m.sender === 'system' ? 'Система' : (m.sender||'кто-то');
+          div.textContent = label + ': ' + m.text;
+          messages.appendChild(div);
+        });
+        fls.forEach(function(f){
+          const a = document.createElement('a');
+          a.href = f.url; a.textContent = f.original_name || f.url; a.target = '_blank';
+          const div = document.createElement('div');
+          div.appendChild(a);
+          files.appendChild(div);
+        });
+      }
+
+      // --- Privacy editor ---
+      const privacyHtml = document.getElementById('privacyHtml');
+      const privacySave = document.getElementById('privacySave');
+      async function loadPrivacy(){
+        try {
+          const r = await fetch('http://localhost:8080/api/settings/privacy');
+          const d = await r.json();
+          privacyHtml.value = d && d.html ? d.html : '';
+        } catch(e) { privacyHtml.value = ''; }
+      }
+      privacySave.addEventListener('click', async function(){
+        await fetch('http://localhost:8080/api/settings/privacy', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ html: privacyHtml.value })
+        });
+        log('Политика конфиденциальности сохранена');
+      });
+      // AI controls for selected chat
+      document.getElementById('aiEnable').addEventListener('click', async function(){
+        if (!currentChatId) return;
+        await fetch('http://localhost:8080/api/chats/' + currentChatId + '/ai/enable', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+      });
+      document.getElementById('aiDisable').addEventListener('click', async function(){
+        if (!currentChatId) return;
+        await fetch('http://localhost:8080/api/chats/' + currentChatId + '/ai/disable', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+      });
+    })();
+  </script>
+</body>
+</html>
+
+

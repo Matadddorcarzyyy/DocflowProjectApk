@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocFlow — Создайте юридический документ за 5 минут</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background-color: #fdf8f2; color: #2d3748; line-height: 1.6; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+    /* Header */
+    header { padding: 16px 0; background: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #1a3a5f, #3b82f6); display: inline-block; }
+    .brand-name { font-size: 1.4rem; font-weight: 700; color: #1a3a5f; }
+    .header-cta { padding: 10px 14px; background: #1a3a5f; color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(26,58,95,0.18); }
+    .header-cta:hover { background: #16314d; }
+
+    /* Hero */
+    .hero { padding: 64px 0 28px; text-align: center; }
+    .hero h1 { font-size: 2.25rem; color: #1a3a5f; margin-bottom: 14px; }
+    .hero p { color: #4a5568; max-width: 720px; margin: 0 auto; }
+
+    /* Main layout */
+    .main { display: flex; flex-wrap: wrap; gap: 32px; align-items: stretch; margin: 32px 0 64px; }
+    .left, .right { min-width: 320px; }
+    .left { order: 1; flex: 1 1 0%; }
+    .right { order: 2; flex: 0 0 460px; margin-left: auto; align-self: stretch; }
+
+    /* Left: documents carousel */
+    .left-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+    .left-title { color: #1a3a5f; font-weight: 700; margin-bottom: 14px; }
+    .carousel { position: relative; padding-bottom: 56px; }
+    .doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .doc-item { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; background: #ffffff; transition: border-color .2s, transform .2s; cursor: pointer; min-height: 96px; display: flex; flex-direction: column; justify-content: center; }
+    .doc-item:hover { border-color: #1a3a5f; transform: translateY(-2px); background: #f8fafc; }
+    .doc-item h4 { color: #1a3a5f; margin-bottom: 6px; font-size: 1rem; }
+    .doc-item p { color: #64748b; font-size: .92rem; }
+    .carousel-arrow { position: absolute; bottom: 10px; width: 34px; height: 34px; border: 0; border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.88)); color: #1a3a5f; display: grid; place-items: center; cursor: pointer; box-shadow: 0 4px 12px rgba(26,58,95,0.14), inset 0 0 0 1px rgba(26,58,95,0.10); backdrop-filter: blur(4px); transition: transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease; z-index: 2; }
+    .carousel-arrow:hover { transform: scale(1.04); box-shadow: 0 8px 18px rgba(26,58,95,0.18), inset 0 0 0 1px rgba(26,58,95,0.16); background: linear-gradient(180deg, #ffffff, #f7fbff); color: #14324e; }
+    .carousel-arrow:active { transform: scale(0.98); box-shadow: 0 3px 10px rgba(26,58,95,0.14), inset 0 0 0 1px rgba(26,58,95,0.2); }
+    .carousel-arrow:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,0.35), 0 6px 16px rgba(26,58,95,0.18), inset 0 0 0 1px rgba(26,58,95,0.14); }
+    .carousel-arrow.left { left: -8px; right: auto; }
+    .carousel-arrow.right { right: 8px; }
+    .arrow-icon { font-size: 14px; line-height: 1; display: inline-block; transform: translateY(1px); }
+
+    /* Select list */
+    .select-wrapper { margin-top: 18px; }
+    .select-label { display: block; margin-bottom: 8px; color: #1a3a5f; font-weight: 600; }
+    #docSelect { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer; }
+
+    /* Right: mini documents carousel + chat */
+    .right-card { background: #ffffff; border-radius: 12px; padding: 18px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); position: sticky; top: 24px; border: 1px solid #e2e8f0; height: 100%; }
+    .mini-carousel { position: relative; margin-bottom: 16px; padding-bottom: 60px; }
+    .mini-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 48px 36px; }
+    .mini { border: 1px solid #e5e7eb; background: #fbfbfb; border-radius: 12px; height: 150px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .mini:before { content: ""; position: absolute; width: 72%; height: 88%; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.04) inset; }
+    .mini span { position: relative; z-index: 1; font-size: .82rem; color: #3a4256; text-align: center; padding: 0 6px; }
+
+    /* Стрелки мини-карусели убраны */
+
+    /* Маленькие стрелки мини-карусели убраны */
+
+    /* Chat */
+    .chat { margin-top: 10px; }
+    .chat-header { color: #1a3a5f; font-weight: 700; margin-bottom: 8px; font-size: 1rem; }
+    .chat-messages { height: 180px; overflow-y: auto; padding: 12px; background: #faf9f7; border: 1px solid #eee5d9; border-radius: 10px; margin-bottom: 10px; font-size: 0.95rem; }
+    .typing { color: #718096; font-style: italic; white-space: pre-wrap; }
+    .chat-input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; }
+    .chat-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .chat-send { padding: 10px 16px; background: #1a3a5f; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+    footer { background: #f5f0e6; color: #718096; padding: 24px 0; font-size: 0.9rem; text-align: center; border-top: 1px solid #e8e0d5; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(17,24,39,0.5); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+    .modal { width: 100%; max-width: 680px; background: #fff; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #eef2f7; background: #fbfbfb; }
+    .modal-title { font-weight: 800; color: #1a3a5f; }
+    .modal-close { background: transparent; border: none; font-size: 22px; color: #64748b; cursor: pointer; padding: 6px; }
+    .modal-body { padding: 16px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; padding: 0 16px 16px; }
+    .btn { padding: 10px 16px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; }
+    .btn-primary { background: #1a3a5f; color: #fff; }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+
+    /* Consent step */
+    .consent-text { color: #475569; margin-bottom: 12px; }
+    .consent-list { list-style: none; margin: 0 0 12px; padding: 0; }
+    .consent-list li { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+    .consent-list input { margin-top: 3px; }
+
+    /* Preview step */
+    .preview-wrap { display: flex; flex-direction: column; gap: 12px; }
+    .doc-preview { height: 320px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; overflow: hidden; position: relative; }
+    .doc-preview-inner { position: absolute; inset: 12px; border: 1px dashed #e5e7eb; border-radius: 8px; padding: 12px; font-family: 'Times New Roman', serif; font-size: 14px; line-height: 1.5; color: #111827; }
+    .blurred { filter: blur(4px); }
+    .highlight { background: #fffbeb; padding: 0 4px; border-radius: 4px; box-shadow: inset 0 0 0 1px #fde68a; }
+    .price-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .price { font-weight: 800; color: #1a3a5f; }
+    .email-input { width: 60%; min-width: 220px; padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; }
+    .input-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 8px; }
+    .input-grid input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; }
+    .doc-select { margin-bottom: 10px; }
+    .doc-select select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; }
+    .provider-note { color:#64748b; font-size: .9rem; margin-top: 6px; }
+
+    /* Success step */
+    .success { text-align: center; color: #1a3a5f; }
+    .download-links { display: flex; justify-content: center; gap: 12px; margin-top: 10px; }
+    .download-links a { color: #1a3a5f; font-weight: 700; }
+
+    @media (max-width: 1024px) {
+      .mini-row { grid-template-columns: repeat(3, 1fr); }
+      .mini { height: 120px; }
+    }
+    @media (max-width: 900px) {
+      .main { flex-direction: column; }
+      .right-card { position: static; }
+      .left { flex: 1 1 auto; margin-right: 0; }
+      .right { flex: 1 1 auto; }
+      .carousel-arrow.left { left: 6px; }
+      .carousel-arrow.right { right: 6px; }
+    }
+    @media (max-width: 520px) {
+      .doc-grid { grid-template-columns: 1fr 1fr; }
+      .mini-row { grid-template-columns: repeat(3, 1fr); }
+      .mini { height: 100px; }
+      .hero h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-logo" aria-hidden="true"></span>
+        <div class="brand-name">DocFlow</div>
+      </div>
+      <button class="header-cta" id="headerCta">Создать документ сейчас</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Создайте юридически грамотный документ онлайн — за 5 минут</h1>
+      <p>Выберите тип документа, ответьте на несколько вопросов — и скачайте готовый файл в формате Word или PDF.</p>
+    </div>
+  </section>
+
+  <div class="container main">
+    <!-- LEFT: documents carousel (4 visible) -->
+    <section class="left">
+      <div class="left-card">
+        <div class="left-title">Доступные документы</div>
+        <div class="carousel">
+          <div class="doc-grid" id="docGrid"></div>
+        </div>
+
+        <div class="select-wrapper">
+          <label class="select-label" for="docSelect">Выбрать из списка</label>
+          <select id="docSelect">
+            <option value="">— Выберите документ —</option>
+            <option>Договор аренды квартиры</option>
+            <option>Договор купли-продажи автомобиля</option>
+            <option>Договор дарения недвижимости</option>
+            <option>Трудовой договор</option>
+            <option>Договор подряда</option>
+            <option>Договор оказания услуг</option>
+            <option>Доверенность на получение ТМЦ</option>
+            <option>Доверенность на представление интересов</option>
+            <option>Заявление на увольнение</option>
+            <option>Заявление на отпуск</option>
+            <option>Расписка о получении денег</option>
+            <option>Договор займа</option>
+            <option>Договор хранения</option>
+            <option>Договор комиссии</option>
+            <option>Договор франчайзинга</option>
+            <option>Устав ООО</option>
+            <option>Протокол общего собрания</option>
+            <option>Договор поставки</option>
+            <option>Договор аренды оборудования</option>
+            <option>Договор безвозмездного пользования</option>
+            <option>Соглашение о расторжении договора</option>
+            <option>Договор цессии</option>
+            <option>Договор аренды земельного участка</option>
+            <option>Договор купли-продажи земли</option>
+            <option>Договор дарения автомобиля</option>
+            <option>Заявление в суд (исковое)</option>
+            <option>Ходатайство о восстановлении срока</option>
+            <option>Жалоба в прокуратуру</option>
+            <option>Заявление на возврат товара</option>
+            <option>Акт сверки взаимных расчётов</option>
+            <option>Договор НДА (о неразглашении)</option>
+            <option>Договор о совместной деятельности</option>
+            <option>Договор лизинга</option>
+            <option>Договор энергоснабжения</option>
+            <option>Договор перевозки</option>
+            <option>Договор страхования</option>
+            <option>Завещание</option>
+            <option>Соглашение об уплате алиментов</option>
+            <option>Брачный договор</option>
+            <option>Договор купли-продажи доли</option>
+            <option>Договор аренды нежилого помещения</option>
+            <option>Договор на выполнение СМР</option>
+            <option>Договор авторского заказа</option>
+            <option>Договор пожизненного содержания</option>
+            <option>Заявление на получение ИНН</option>
+            <option>Заявление в налоговую (форма Р21001)</option>
+            <option>Договор концессии</option>
+            <option>Договор мены</option>
+            <option>Договор ренты</option>
+            <option>Договор на техническое обслуживание</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: mini docs carousel (3 visible) + chat -->
+    <aside class="right">
+      <div class="right-card">
+        <div class="mini-carousel">
+          <div class="mini-row" id="miniRow"></div>
+        </div>
+
+        <div class="chat">
+          <div class="chat-header">Чат с юристом</div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="typing" id="typing"></div>
+          </div>
+          <textarea class="chat-input" id="userMessage" placeholder="Введите ваш вопрос..." rows="3"></textarea>
+          <div class="chat-actions">
+            <button class="chat-send" id="sendBtn">Отправить</button>
+            <button class="btn btn-secondary" id="startFlowBtn">Начать оформление</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Modal: Multi-step flow -->
+  <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">Продолжение оформления</div>
+        <button class="modal-close" id="modalClose" aria-label="Закрыть">×</button>
+      </div>
+      <div class="modal-body">
+        <!-- Step 1: Consent -->
+        <div class="step" id="step1">
+          <p class="consent-text">Для продолжения нам потребуется ваше согласие и контактные данные.</p>
+          <ul class="consent-list">
+            <li><input type="checkbox" id="chk1" /><label for="chk1">Согласен(а) на обработку персональных данных для подготовки документа.</label></li>
+            <li><input type="checkbox" id="chk2" /><label for="chk2">Подтверждаю корректность вводимых данных и согласие с офертой.</label></li>
+          </ul>
+        </div>
+
+        <!-- Step 2: Preview + email + price -->
+        <div class="step" id="step2" style="display:none;">
+          <div class="preview-wrap">
+            <div class="input-grid">
+              <input id="sellerName" type="text" placeholder="ФИО продавца" />
+              <input id="sellerPass" type="text" placeholder="Паспорт продавца" />
+              <input id="buyerName" type="text" placeholder="ФИО покупателя" />
+              <input id="buyerPass" type="text" placeholder="Паспорт покупателя" />
+            </div>
+            <div class="doc-select">
+              <select id="docTypeSelect" aria-label="Тип документа"></select>
+            </div>
+            <div class="doc-preview">
+              <div class="doc-preview-inner">
+                <div><strong id="pvDocTitle">Договор</strong></div>
+                <div style="margin-top:8px;">
+                  Продавец: <span class="highlight" id="pvSellerName">—</span>, паспорт <span class="highlight" id="pvSellerPass">—</span><br/>
+                  Покупатель: <span class="highlight" id="pvBuyerName">—</span>, паспорт <span class="highlight" id="pvBuyerPass">—</span>
+                </div>
+                <div class="blurred" style="margin-top:10px;">
+                  1. Предмет договора: Стороны договорились о купле-продаже объекта недвижимости ...<br/>
+                  2. Цена договора, порядок расчётов, права и обязанности Сторон ...<br/>
+                  3. Заключительные положения, ответственность Сторон и подписи ...
+                </div>
+              </div>
+            </div>
+            <div class="price-line">
+              <div class="price">Стоимость: <span id="priceValue">700</span> ₽</div>
+              <input class="email-input" id="emailInput" type="email" placeholder="Ваша почта для отправки" />
+            </div>
+            <div class="provider-note">Провайдер оплаты по умолчанию: YooKassa</div>
+          </div>
+        </div>
+
+        <!-- Step 3: Success -->
+        <div class="step" id="step3" style="display:none;">
+          <div class="success">
+            <div style="font-weight:800; margin-bottom:8px;">Спасибо за заказ!</div>
+            <div>Документ и чек отправлены на указанную почту.</div>
+            <div class="download-links">
+              <a href="#" download>Скачать PDF</a>
+              <a href="#" download>Скачать DOCX</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="backBtn" style="display:none;">Назад</button>
+        <button class="btn btn-primary" id="nextBtn">Продолжить</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+      <div style="color:#718096;">© 2025 DocFlow</div>
+      <div style="color:#718096; flex:1; text-align:center;">Информация не является юридической консультацией, для сложных вопросов рекомендуем обратиться к квалифицированному юристу.</div>
+      <nav style="display:flex; gap:14px;">
+        <a href="vacancies.html" style="color:#1a3a5f; font-weight:700;">Вакансии</a>
+        <a href="lawyer.html" style="color:#1a3a5f; font-weight:700;">Сотрудникам</a>
+        <a href="cooperation.html" style="color:#1a3a5f; font-weight:700;">Партнёрам</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="http://localhost:8080/socket.io/socket.io.js"></script>
+  <script>
+    // Left carousel data (20 items, last is "Создать другой документ")
+    const leftDocs = [
+      { title: 'Договор дарения', desc: 'Для передачи имущества без рисков' },
+      { title: 'Договор купли-продажи', desc: 'Авто, недвижимость, техника' },
+      { title: 'Договор аренды квартиры', desc: 'С залогом, коммуналкой и сроком' },
+      { title: 'Договор оказания услуг', desc: 'Для фрилансеров и ИП' },
+      { title: 'Договор подряда', desc: 'Работы с результатом' },
+      { title: 'Договор займа', desc: 'Займ под расписку' },
+      { title: 'Трудовой договор', desc: 'Оформление сотрудника' },
+      { title: 'Договор комиссии', desc: 'Посреднические услуги' },
+      { title: 'Договор поставки', desc: 'Поставка товаров' },
+      { title: 'Договор хранения', desc: 'Ответственное хранение' },
+      { title: 'Договор франчайзинга', desc: 'Право использовать бренд' },
+      { title: 'Договор лизинга', desc: 'Финансовая аренда' },
+      { title: 'Договор энергоснабжения', desc: 'Поставка энергии' },
+      { title: 'Договор перевозки', desc: 'Груз/пассажиры' },
+      { title: 'Договор страхования', desc: 'Страхование рисков' },
+      { title: 'Брачный договор', desc: 'Имущественные отношения' },
+      { title: 'Договор цессии', desc: 'Уступка права требования' },
+      { title: 'Договор ренты', desc: 'Рента и содержание' },
+      { title: 'Аренда нежилого помещения', desc: 'Коммерческая недвижимость' },
+      { title: 'Создать другой документ', desc: 'По вашему запросу' }
+    ];
+
+    let leftIndex = 0; // index of first visible in leftDocs
+    const docGrid = document.getElementById('docGrid');
+    function titleToDocId(title) {
+      const map = {
+        'Договор дарения': 'gift',
+        'Договор купли-продажи': 'sale-flat',
+        'Договор купли-продажи автомобиля': 'sale-car',
+        'Договор аренды квартиры': 'rent',
+        'Договор оказания услуг': 'service',
+        'Договор займа': 'loan',
+        'Договор НДА (о неразглашении)': 'nda',
+        'Создать другой документ': 'other'
+      };
+      // Direct match
+      if (map[title]) return map[title];
+      // Fallbacks by keywords
+      if (title.toLowerCase().includes('дарени')) return 'gift';
+      if (title.toLowerCase().includes('арен')) return 'rent';
+      if (title.toLowerCase().includes('услуг')) return 'service';
+      if (title.toLowerCase().includes('займ')) return 'loan';
+      if (title.toLowerCase().includes('купли-продажи') && title.toLowerCase().includes('авто')) return 'sale-car';
+      if (title.toLowerCase().includes('купли-продажи')) return 'sale-flat';
+      return 'other';
+    }
+
+    function renderLeft() {
+      docGrid.innerHTML = '';
+      for (let i = 0; i < 4; i++) {
+        const doc = leftDocs[(leftIndex + i) % leftDocs.length];
+        const div = document.createElement('div');
+        div.className = 'doc-item';
+        div.innerHTML = `<h4>${doc.title}</h4><p>${doc.desc}</p>`;
+        div.dataset.docId = titleToDocId(doc.title);
+        div.addEventListener('click', () => {
+          const id = div.dataset.docId || 'other';
+          const select = document.getElementById('docTypeSelect');
+          if (select) { select.value = id; updateDocPreviewFromSelect(); }
+          openModal();
+        });
+        docGrid.appendChild(div);
+      }
+    }
+    // Стрелки для левой карусели документов удалены
+
+    // Right mini-docs carousel (3 visible) — using simple labels as placeholders for tiny previews
+    const miniDocs = [
+      'Дарение — образец', 'Купля-продажа авто', 'Аренда квартиры', 'Оказание услуг', 'Подряд', 'Займ', 'Комиссия', 'Поставка', 'Хранение', 'Франчайзинг', 'Лизинг', 'Страхование', 'Перевозка'
+    ];
+    let miniIndex = 0;
+    const miniRow = document.getElementById('miniRow');
+    function renderMini() {
+      miniRow.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const label = miniDocs[(miniIndex + i) % miniDocs.length];
+        const m = document.createElement('div');
+        m.className = 'mini';
+        m.innerHTML = `<span>${label}</span>`;
+        miniRow.appendChild(m);
+      }
+    }
+    // Ручная прокрутка мини-карусели убрана
+
+    // Автопрокрутка мини-карусели: каждые 4 секунды шаг вперёд
+    let miniAutoTimer = setInterval(function(){
+      miniIndex = (miniIndex + 1) % miniDocs.length;
+      renderMini();
+    }, 4000);
+    // Пауза при взаимодействии и возобновление
+    ['miniRow','miniLeftSm','miniRightSm'].forEach(function(id){
+      const el = document.getElementById(id) || (id==='miniRow'? miniRow : null);
+      if (!el) return;
+      el.addEventListener('mouseenter', function(){ clearInterval(miniAutoTimer); miniAutoTimer = null; });
+      el.addEventListener('mouseleave', function(){ if (!miniAutoTimer) miniAutoTimer = setInterval(function(){ miniIndex = (miniIndex + 1) % miniDocs.length; renderMini(); }, 4000); });
+    });
+
+    // Chat typing effect with rotating phrases
+    const typingEl = document.getElementById('typing');
+    const phrases = [
+      'Напишу любой документ или заявление прямо сейчас. Скажите, какой документ вас интересует? ',
+      'Подскажу, как правильно составить договор под вашу ситуацию. Чем помочь? ',
+      'Готов подготовить документ за 5 минут. Какой документ нужен? ',
+      'Помогу оформить юридически грамотно. Что составляем? ',
+      'Подготовлю проект договора и пришлю на проверку. Что требуется? ',
+      'Задам пару уточняющих вопросов и соберу документ. О чем речь? ',
+      'Подберу актуальные формулировки. Какой документ нужен сейчас? '
+    ];
+    let phraseIndex = Math.floor(Math.random() * phrases.length);
+    let charIndex = 0;
+    let deleting = false;
+    function typeLoop() {
+      const current = phrases[phraseIndex];
+      if (!deleting) {
+        typingEl.textContent = current.slice(0, charIndex++);
+        if (charIndex > current.length) {
+          deleting = true;
+          setTimeout(typeLoop, 1400);
+          return;
+        }
+      } else {
+        typingEl.textContent = current.slice(0, charIndex--);
+        if (charIndex <= 0) {
+          deleting = false;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+        }
+      }
+      const delay = deleting ? 28 : 42; // typing speeds
+      setTimeout(typeLoop, delay);
+    }
+
+    // Chat send
+    const chatBox = document.getElementById('chatMessages');
+    const inputEl = document.getElementById('userMessage');
+    // Переменные чата посетителя и сокет
+    let visitorChatId = null;
+    const socket = io('http://localhost:8080', { transports: ['websocket'] });
+    async function ensureVisitorChat(){
+      try {
+        if (visitorChatId) return visitorChatId;
+        const r = await fetch('http://localhost:8080/api/chats', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitor_id: 'site-' + Math.random().toString(36).slice(2) })
+        });
+        const d = await r.json();
+        visitorChatId = d && d.id;
+        if (visitorChatId) socket.emit('join-chat', { chatId: visitorChatId });
+        return visitorChatId;
+      } catch(e) { return null; }
+    }
+    socket.on('connect', function(){ if (visitorChatId) socket.emit('join-chat', { chatId: visitorChatId }); });
+    socket.on('message', function(evt){
+      if (!visitorChatId || evt.chatId !== visitorChatId) return;
+      const div = document.createElement('div');
+      let who = 'Собеседник';
+      if (evt.sender === 'ai') who = 'Помощник';
+      else if (evt.sender === 'lawyer') who = (evt.lawyer_name || 'Юрист');
+      else if (evt.sender === 'system') who = 'Система';
+      else if (evt.sender === 'visitor') who = 'Вы';
+      div.innerHTML = `<strong>${who}:</strong> ${evt.text}`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+    // presence events: do not show join/leave (only system messages are used)
+    socket.on('presence', function(evt){
+      return; // noop: announcements handled via system messages only
+    });
+
+    // Queue and assignment events
+    socket.on('visitor-queued', function(evt){
+      if (!visitorChatId || evt.chatId !== visitorChatId) return;
+      const div = document.createElement('div');
+      div.innerHTML = `<em style="color: #f59e0b;">${evt.message}</em>`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    socket.on('lawyer-assigned', function(evt){
+      if (!visitorChatId || evt.chatId !== visitorChatId) return;
+      const div = document.createElement('div');
+      div.innerHTML = `<em style="color: #10b981;">${evt.message}</em>`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+    async function sendMessage() {
+      const msg = inputEl.value.trim();
+      if (!msg) return;
+      inputEl.value = '';
+      // Гарантируем наличие чата и отправляем через Socket.IO (сервер сохранит в БД)
+      const cid = await ensureVisitorChat();
+      if (!cid) return;
+      socket.emit('message', { chatId: cid, sender: 'visitor', text: msg });
+    }
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    inputEl.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    // Pricing per document (статический каталог сохраняем)
+    const docCatalog = [
+      { id: 'gift', title: 'Договор дарения', price: 500 },
+      { id: 'sale-car', title: 'Договор купли-продажи автомобиля', price: 700 },
+      { id: 'sale-flat', title: 'Договор купли-продажи квартиры', price: 900 },
+      { id: 'rent', title: 'Договор аренды квартиры', price: 600 },
+      { id: 'service', title: 'Договор оказания услуг', price: 650 },
+      { id: 'loan', title: 'Договор займа', price: 550 },
+      { id: 'nda', title: 'Договор НДА (о неразглашении)', price: 600 },
+      { id: 'other', title: 'Создать другой документ', price: 750 }
+    ];
+    // Динамических документов на главной не подмешиваем — оставляем статический список
+
+    async function fillDocTypeSelect() {
+      const sel = document.getElementById('docTypeSelect');
+      if (!sel) return;
+      sel.innerHTML = '';
+      docCatalog.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id; opt.textContent = d.title;
+        sel.appendChild(opt);
+      });
+    }
+
+    function updateDocPreviewFromSelect() {
+      const sel = document.getElementById('docTypeSelect');
+      const titleEl = document.getElementById('pvDocTitle');
+      const priceEl = document.getElementById('priceValue');
+      if (!sel || !titleEl || !priceEl) return;
+      const doc = docCatalog.find(d => d.id === sel.value) || docCatalog[0];
+      titleEl.textContent = doc.title;
+      priceEl.textContent = doc.price;
+    }
+
+    // Init
+    renderLeft();
+    renderMini();
+    typeLoop();
+    fillDocTypeSelect();
+    updateDocPreviewFromSelect();
+
+    const docTypeSelect = document.getElementById('docTypeSelect');
+    if (docTypeSelect) docTypeSelect.addEventListener('change', updateDocPreviewFromSelect);
+
+    // External select wiring: open modal with chosen doc
+    const externalSelect = document.getElementById('docSelect');
+    if (externalSelect) externalSelect.addEventListener('change', () => {
+      const text = externalSelect.value;
+      if (!text) return;
+      const id = titleToDocId(text);
+      if (docTypeSelect) { docTypeSelect.value = id; updateDocPreviewFromSelect(); }
+      openModal();
+    });
+
+    // Modal logic
+    const overlay = document.getElementById('modalOverlay');
+    const modalClose = document.getElementById('modalClose');
+    const nextBtn = document.getElementById('nextBtn');
+    const backBtn = document.getElementById('backBtn');
+    const headerCta = document.getElementById('headerCta');
+    const startFlowBtn = document.getElementById('startFlowBtn');
+    const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3')];
+    let stepIndex = 0;
+    // Live binding inputs to preview
+    const sellerName = document.getElementById('sellerName');
+    const sellerPass = document.getElementById('sellerPass');
+    const buyerName = document.getElementById('buyerName');
+    const buyerPass = document.getElementById('buyerPass');
+    const pvSellerName = document.getElementById('pvSellerName');
+    const pvSellerPass = document.getElementById('pvSellerPass');
+    const pvBuyerName = document.getElementById('pvBuyerName');
+    const pvBuyerPass = document.getElementById('pvBuyerPass');
+
+    function bindPreview() {
+      if (sellerName) pvSellerName.textContent = sellerName.value || '—';
+      if (sellerPass) pvSellerPass.textContent = sellerPass.value || '—';
+      if (buyerName) pvBuyerName.textContent = buyerName.value || '—';
+      if (buyerPass) pvBuyerPass.textContent = buyerPass.value || '—';
+    }
+
+    function showStep(idx) {
+      steps.forEach((s, i) => { s.style.display = i === idx ? 'block' : 'none'; });
+      backBtn.style.display = idx > 0 ? 'inline-block' : 'none';
+      nextBtn.textContent = idx === steps.length - 1 ? 'Готово' : (idx === 1 ? 'Перейти к оплате' : 'Продолжить');
+    }
+    function openModal() { overlay.style.display = 'flex'; stepIndex = 0; showStep(stepIndex); }
+    function closeModal() { overlay.style.display = 'none'; }
+
+    headerCta.addEventListener('click', openModal);
+    if (startFlowBtn) startFlowBtn.addEventListener('click', openModal);
+    modalClose.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+    backBtn.addEventListener('click', () => { if (stepIndex > 0) { stepIndex -= 1; showStep(stepIndex); } });
+    async function startPaymentFlow() {
+      // Create order → start payment
+      try {
+        const sel = document.getElementById('docTypeSelect');
+        const price = Number(document.getElementById('priceValue')?.textContent || 0);
+        const email = document.getElementById('emailInput')?.value || '';
+        const doc = sel ? sel.value : 'other';
+        let document_id = 1;
+        if (doc && doc.indexOf('doc-') === 0) {
+          const found = apiDocs.find(d => d.id === doc);
+          if (found) document_id = found.docId;
+        } else {
+          // Fallback: статика по порядку (как и было)
+          const idx = (docCatalog.findIndex(d => d.id === doc));
+          document_id = idx >= 0 ? (idx + 1) : 1;
+        }
+        const orderRes = await fetch('http://localhost:8080/api/orders', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ document_id, email, price, payload: { sellerName: sellerName?.value, buyerName: buyerName?.value } })
+        });
+        const order = await orderRes.json();
+        if (!order.id) throw new Error('Order create failed');
+        const payRes = await fetch('http://localhost:8080/api/payments/start', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider: 'yookassa', order_id: order.id, amount: price, description: 'DocFlow оплата', email })
+        });
+        const pay = await payRes.json();
+        if (!pay.url) throw new Error('Payment start failed');
+        window.open(pay.url, '_blank');
+        stepIndex = 2; showStep(stepIndex);
+      } catch (e) {
+        alert('Ошибка оплаты: ' + e.message);
+      }
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (stepIndex === 0) {
+        const ok = document.getElementById('chk1').checked && document.getElementById('chk2').checked;
+        if (!ok) { alert('Пожалуйста, подтвердите оба согласия.'); return; }
+      }
+      if (stepIndex === 1) { startPaymentFlow(); return; }
+      if (stepIndex < steps.length - 1) { stepIndex += 1; showStep(stepIndex); }
+      else { closeModal(); }
+    });
+
+    // Input listeners for live binding
+    [sellerName, sellerPass, buyerName, buyerPass].forEach(el => {
+      if (el) el.addEventListener('input', bindPreview);
+    });
+
+    // Отключаем живое обновление каталога на главной (возврат к прежнему поведению)
+    // socket.on('documents-updated', async function(){
+    //   await fetchDocumentsFromApi();
+    //   fillDocTypeSelect();
+    //   updateDocPreviewFromSelect();
+    // });
+  </script>
+</body>
+</html>

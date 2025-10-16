@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Сотрудничество — DocFlow</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, sans-serif; background:#f8fafc; color:#1f2937; margin:0; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+    a { color:#1a3a5f; text-decoration:none; }
+    header { display:flex; align-items:center; justify-content:space-between; padding:16px 0; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); }
+    .btn { display:inline-block; padding:10px 14px; border-radius:10px; background:#1a3a5f; color:#fff; font-weight:700; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="index.html">← На главную</a>
+      <strong>Сотрудничество</strong>
+    </header>
+    <div class="card">
+      <p>Демо кабинет партнёра откроется во всплывающем окне.</p>
+      <p><a class="btn" href="#">Открыть демо-кабинет</a></p>
+      <p style="margin-top:10px; color:#6b7280;">Страница не индексируется поисковыми системами.</p>
+    </div>
+  </div>
+  <script>
+    (function(){
+      var btn = document.querySelector('.btn');
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        var w = window.open('partner.html', 'demo', 'width=420,height=720');
+        if (!w) alert('Разрешите всплывающие окна для демо');
+      });
+    })();
+  </script>
+</body>
+</html>
+
+

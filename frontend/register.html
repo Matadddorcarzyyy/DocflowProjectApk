@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Регистрация — DocFlow</title>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, sans-serif; background:#f8fafc; color:#111827; margin:0; }
+    .wrap { max-width: 420px; margin: 60px auto; padding: 24px; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
+    input { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:10px; }
+    button { width:100%; padding:10px; border-radius:8px; background:#1a3a5f; color:#fff; font-weight:700; }
+    a { color:#1a3a5f; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2>Регистрация (юрист)</h2>
+      <input id="full_name" placeholder="ФИО" />
+      <input id="email" placeholder="email" />
+      <input id="password" type="password" placeholder="пароль" />
+      <button id="register">Зарегистрироваться</button>
+      <div style="margin-top:8px; font-size:14px;">Уже есть аккаунт? <a href="login.html">Войти</a></div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      const full_name = document.getElementById('full_name');
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      const btn = document.getElementById('register');
+
+      btn.addEventListener('click', async function(){
+        try {
+          const r = await fetch('http://localhost:8080/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email.value, password: password.value, role: 'lawyer', full_name: full_name.value })
+          });
+          const data = await r.json();
+          if (!r.ok) { alert('Ошибка регистрации'); return; }
+          localStorage.setItem('jwt', data.token);
+          location.href = 'lawyer.html';
+        } catch(e) { console.error(e); }
+      });
+    })();
+  </script>
+</body>
+</html>

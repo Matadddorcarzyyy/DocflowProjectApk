@@ -1,0 +1,18 @@
+{
+  "name": "docflow",
+  "version": "1.0.0",
+  "description": "DocFlow - Legal Document Generation Platform",
+  "main": "server/src/index.js",
+  "scripts": {
+    "start": "cd server && npm start",
+    "dev": "cd server && npm run dev",
+    "build": "echo 'Static site - no build needed'",
+    "postinstall": "cd server && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["legal", "documents", "lawyer", "chat"],
+  "author": "DocFlow Team",
+  "license": "MIT"
+}
